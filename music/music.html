@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .music-box {
+            width: 400px;
+            margin: 100px auto;
+        }
+        nav {
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            background-color: #000;
+            display: flex;
+        }
+        a {
+            display: block;
+            flex: 1;
+            color: #fff;
+            text-decoration: none;
+        }
+        ul {
+            padding: 0 10px;
+            margin: 0;
+            list-style: none;
+            border: 1px solid #ccc;
+        }
+        ul li {
+            line-height: 1;
+            padding: 5px 0;
+            margin: 5px 0;
+        }
+        ul li:hover {
+            background-color: #d8f0f0;
+        }
+    </style>
+    <script src='angular.min.js'></script>
+    <script src='angular-route.js'></script>
+    <script>
+        // 2. angular-route.js ngRoute 路由  负责请求转发
+        var app = angular.module('app',['ngRoute']);
+        // 3. 动态获取 nav内容 并渲染到页面
+        app.controller('navController',['$scope','$http',function ($scope,$http) {
+            $http({
+                url: 'navs.php',
+                method: 'get'
+            }).success(function (data) {
+//               console.log(data);
+                $scope.data = data
+            });
+        }]);
+        // 5. 配置路由
+        app.config(['$routeProvider',function ($routeProvider) {
+            // 6. 点击相应的nav会获取到相应的id 根据id 渲染相应的页面
+            $routeProvider.when('/:id',{
+                // 7. 关联控制器
+                controller: 'listController',
+                templateUrl: 'music.tmp'
+            })
+        }]);
+        // 8. listController 请求list php数据
+        // 歌曲特别的多 要根据你点击的id 获取对应的数据
+        // 发送你点击的id
+        app.controller('listController',['$scope','$http', '$routeParams',function ($scope, $http, $routeParams) {
+            var pid = $routeParams.id; // 获取参数
+            $http({
+                url: 'list.php',
+                method: 'get',
+                params: {   // 传递参数
+                    pid: pid
+                }
+            }).success(function (data) {
+//                console.log(data);
+                $scope.list = data;
+            })
+        }]);
+        
+    </script>
+</head>
+<body>
+    <!--1. 写一个静态页面-->
+    <div class="music-box" ng-app='app' ng-controller='navController'>
+        <nav>
+            <!--4. 点击nav获取相应的内容页面 锚点 config-->
+            <a href="#/{{item.id}}" ng-repeat='item in data' ng-cloak>{{item.categoryName}}</a>
+        </nav>
+        <!--9. 路由获取的数据防止在哪里-->
+        <div ng-view></div>
+    </div>
+</body>
+</html>
